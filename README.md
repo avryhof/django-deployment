@@ -43,13 +43,13 @@ mkdir -p /var/www/virtualenvs
 cd /var/www/virtualenvs
 virtualenv myprojectenv
 ```
-This configuration is for more secure websites that store sensitive data outside of the website root, as it should be. 
+* This configuration is for more secure websites that store sensitive data outside of the website root, as it should be. 
 ```bash
 cd myprojectenv/bin
 nano activate
 ```
 Scroll to the bottom of your activate file, and add in environmental variables you want to be available to your project.
-I like to have a different prefix for each project that might be hosted on the server. (PRJ_ in the example below)
+* I like to have a different prefix for each project that might be hosted on the server. (PRJ_ in the example below)
 ```bash
 export PRJ_SECRET_KEY='<your secret key>'
 export PRJ_DB_ENGINE=django.db.backends.postgresql_psycopg2
@@ -254,7 +254,7 @@ change by editing your web server's configuration.
 Select the appropriate number [1-2] then [enter] (press 'c' to cancel):
 ```
 
-This will give you an A grade on the [SSL Labs Server Test](https://www.ssllabs.com/ssltest/).  Not to shabby for 4 lines.
+This will give you an A grade on the [SSL Labs Server Test](https://www.ssllabs.com/ssltest/).  Not too shabby for 4 lines.
 
 ## Final Nginx configuration
 If you are happy with an A on the SSL Labs Server Test, you can skip this section.
