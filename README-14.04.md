@@ -1,5 +1,3 @@
-If you are using Ubuntu 14.04 or lower (not recommended) view the [other readme](README-14.04.md).
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -11,7 +9,7 @@ If you are using Ubuntu 14.04 or lower (not recommended) view the [other readme]
   - [Install nginx](#install-nginx)
   - [Your Django Project](#your-django-project)
   - [Setup Gunicorn](#setup-gunicorn)
-  - [Create a systemd Service File](#create-a-systemd-service-file)
+  - [Create a Gunicorn Upstart File](#create-a-gunicorn-upstart-file)
   - [Configure nginx to proxy-pass to your gunicorn](#configure-nginx-to-proxy-pass-to-your-gunicorn)
   - [Allowing your application through your firewall](#allowing-your-application-through-your-firewall)
   - [Adding SSL To your website (just do it!)](#adding-ssl-to-your-website-just-do-it)
@@ -162,38 +160,36 @@ Don't forget to make it executable
 chmod +x /var/www/virtualenvs/myprojectenv/bin/gunicorn_start.sh
 ```
 
-## Create a systemd Service File
+## Create a Gunicorn Upstart File
 
 ```bash
-sudo nano /etc/systemd/system/myproject_gunicorn.service
+sudo nano /etc/init/myproject_gunicorn.conf
 ```
 
 Make it look like this.
 
 You are calling your gunicorn_start script that you created in the section above because it activates your environment and exports all of your environmental variable before executing your highly customized gunicorn command.
 ```bash
-[Unit]
-Description=myproject gunicorn daemon
-After=network.target
+description "myproject gunicorn daemon"
 
-[Service]
-User=www-data
-Group=www-data
-WorkingDirectory=/var/www/myproject
-ExecStart=/var/www/virtualenvs/myprojectenv/bin/gunicorn_start.sh
+start on runlevel [2345]
+stop on runlevel [!2345]
 
-[Install]
-WantedBy=multi-user.target
+respawn
+setuid www-data
+setgid www-data
+chdir /var/www/myproject
+
+exec /var/www/virtualenvs/myprojectenv/bin/gunicorn_start.sh
 ```
 
-Now you can control your gunicorn instance with systemctl
+Now you can control your gunicorn instance with service
 ```bash
-sudo systemctl start myproject_gunicorn
-sudo systemctl enable myproject_gunicorn
+sudo service myproject_gunicorn start
 
-sudo systemctl restart myproject_gunicorn
+sudo service myproject_gunicorn restart
 
-sudo systemctl stop myproject_gunicorn
+sudo service myproject_gunicorn stop
 ```
 
 ## Configure nginx to proxy-pass to your gunicorn
