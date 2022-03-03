@@ -110,7 +110,7 @@ mkdir -p /var/www/myproject/run
 mkdir -p /var/www/myproject/build/YYYY-MM-DD
 cd /var/www/myproject
 chown www-data:www-data media
-cd ~/var/www/myproject/build
+cd /var/www/myproject/build
 # This step is just putting your project into the YYYY-MM-DD folder. This would be the folder containing manage.py
 git clone https://github.com/mycooldevname/myproject YYYY-MM-DD
 source /var/www/virtualenvs/myprojectenv/bin/activate
