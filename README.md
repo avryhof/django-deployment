@@ -29,6 +29,8 @@ the [DigitalOcean docs](https://www.digitalocean.com/community/tutorials/how-to-
 
 * Replace nano with the editor of your choice, this is not the place for a text editor holy war.
 
+Companion/helper script(s) and templates are available in [this gist](https://gist.github.com/avryhof/fe0ce409e877a2451577bd5bbe38c978)
+
 ## Setting up Python
 
 If your application uses Python2
