@@ -59,12 +59,12 @@ sudo -u postgres psql
 Creating your Database and user
 
 ```postgresql
-CREATE USER myprojectuser WITH PASSWORD 'password';
-ALTER ROLE myprojectuser SET client_encoding TO 'utf8';
-ALTER ROLE myprojectuser SET default_transaction_isolation TO 'read committed';
-ALTER ROLE myprojectuser SET timezone TO 'UTC';
-CREATE DATABASE myprojectdb;
-GRANT ALL PRIVILEGES ON DATABASE myprojectdb TO myprojectuser;
+CREATE USER <database-user> WITH PASSWORD '<database-user-password>';
+ALTER ROLE <database-user> SET client_encoding TO 'utf8';
+ALTER ROLE <database-user> SET default_transaction_isolation TO 'read committed';
+ALTER ROLE <database-user> SET timezone TO 'UTC';
+CREATE DATABASE <database-name>;
+GRANT ALL PRIVILEGES ON DATABASE <database-name> TO <database-user>;
 ```
 
 ## Creating your VirtualEnv
@@ -73,13 +73,13 @@ GRANT ALL PRIVILEGES ON DATABASE myprojectdb TO myprojectuser;
 sudo su
 mkdir -p /var/www/virtualenvs
 cd /var/www/virtualenvs
-virtualenv myprojectenv
+virtualenv <project-environment-name>
 ```
 
 * This configuration is for more secure websites that store sensitive data outside of the website root, as it should be.
 
 ```bash
-cd myprojectenv/bin
+cd <project-environment-name>/bin
 nano activate
 ```
 
@@ -124,18 +124,18 @@ and easily roll back to a previous version just by replacing a symlink.
 
 ```bash
 sudo su
-mkdir -p /var/www/myproject
-mkdir -p /var/www/myproject/logs
-mkdir -p /var/www/myproject/media
-mkdir -p /var/www/myproject/static
-mkdir -p /var/www/myproject/run
-mkdir -p /var/www/myproject/build/YYYY-MM-DD
-cd /var/www/myproject
+mkdir -p /var/www/<project-name>
+mkdir -p /var/www/<project-name>/logs
+mkdir -p /var/www/<project-name>/media
+mkdir -p /var/www/<project-name>/static
+mkdir -p /var/www/<project-name>/run
+mkdir -p /var/www/<project-name>/build/YYYY-MM-DD
+cd /var/www/<project-name>
 chown www-data:www-data media
-cd /var/www/myproject/build
+cd /var/www/<project-name>/build
 # This step is just putting your project into the YYYY-MM-DD folder. This would be the folder containing manage.py
 git clone https://github.com/mycooldevname/myproject YYYY-MM-DD
-source /var/www/virtualenvs/myprojectenv/bin/activate
+source /var/www/virtualenvs/<project-environment-name>/bin/activate
 # For your existing Django project.
 pip install -r requirements.txt
 ./manage.py migrate
@@ -152,7 +152,7 @@ In the previous section, you installed gunicorn into your VirtualEnv. Now, we wi
 First, create a script to start gunicorn with your project specific settings
 
 ```bash
-sudo nano /var/www/virtualenvs/myprojectenv/bin/gunicorn_start.sh
+sudo nano /var/www/virtualenvs/<project-environment-name>/bin/gunicorn_start.sh
 ```
 
 Make the file look something like this.
@@ -160,8 +160,9 @@ Make the file look something like this.
 ```bash
 #!/bin/bash
 
-NAME="myproject"
-PRJ_VENV=/var/www/virtualenvs/${NAME}env
+NAME='<project-name>'
+ENV_NAME='<project-environment-name>'
+PRJ_VENV=/var/www/virtualenvs/${ENV_NAME}
 PRJ_HOME=/var/www/${NAME}
 
 RUNDIR=${PRJ_HOME}/run
@@ -186,13 +187,13 @@ exec gunicorn ${DJANGO_WSGI_MODULE}:application --name $NAME --workers $NUM_WORK
 Don't forget to make it executable
 
 ```bash
-chmod +x /var/www/virtualenvs/myprojectenv/bin/gunicorn_start.sh
+chmod +x /var/www/virtualenvs/<project-environment-name>/bin/gunicorn_start.sh
 ```
 
 ## Create a systemd Service File
 
 ```bash
-sudo nano /etc/systemd/system/myproject_gunicorn.service
+sudo nano /etc/systemd/system/<project-name>_gunicorn.service
 ```
 
 Make it look like this.
@@ -202,14 +203,14 @@ and exports all of your environmental variable before executing your highly cust
 
 ```bash
 [Unit]
-Description=myproject gunicorn daemon
+Description=<project-name> gunicorn daemon
 After=network.target
 
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/myproject
-ExecStart=/var/www/virtualenvs/myprojectenv/bin/gunicorn_start.sh
+WorkingDirectory=/var/www/<project-name>
+ExecStart=/var/www/virtualenvs/<project-environment-name>/bin/gunicorn_start.sh
 
 [Install]
 WantedBy=multi-user.target
@@ -218,12 +219,12 @@ WantedBy=multi-user.target
 Now you can control your gunicorn instance with systemctl
 
 ```bash
-sudo systemctl start myproject_gunicorn
-sudo systemctl enable myproject_gunicorn
+sudo systemctl start <project-name>_gunicorn
+sudo systemctl enable <project-name>_gunicorn
 
-sudo systemctl restart myproject_gunicorn
+sudo systemctl restart <project-name>_gunicorn
 
-sudo systemctl stop myproject_gunicorn
+sudo systemctl stop <project-name>_gunicorn
 ```
 
 ## Configure nginx to proxy-pass to your gunicorn
@@ -231,7 +232,7 @@ sudo systemctl stop myproject_gunicorn
 First, create your nginx configuration file
 
 ```bash
-sudo nano /etc/nginx/sites-available/myproject
+sudo nano /etc/nginx/sites-available/<project-name>
 ```
 
 Now, make it look like this -
@@ -247,16 +248,16 @@ server {
     location = /favicon.ico { access_log off; log_not_found off; }
     
     location /static/ {
-        root /var/www/myproject;
+        root /var/www/<project-name>;
     }
     
     location /media/ {
-        root /var/www/myproject;
+        root /var/www/<project-name>;
     }
 
     location / {
         include proxy_params;
-        proxy_pass http://unix:/var/www/myproject/run/myproject.sock;
+        proxy_pass http://unix:/var/www/<project-name>/run/myproject.sock;
     }
 }
 ```
@@ -264,7 +265,7 @@ server {
 Symlink it into the sites-enabled folder
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/<project-name> /etc/nginx/sites-enabled
 ```
 
 Test your nginx configuration
@@ -350,7 +351,7 @@ Looks like we've done several of the steps already.
 Open your site's nginx configuration
 
 ```bash
-sudo nano /etc/nginx/sites-available/myproject
+sudo nano /etc/nginx/sites-available/<project-name>
 ```
 
 You will notice that there is now a server block with
