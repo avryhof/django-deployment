@@ -90,8 +90,8 @@ Scroll to the bottom of your activate file, and add in environmental variables y
 ```bash
 export PRJ_SECRET_KEY='<your secret key>'
 export PRJ_DB_ENGINE=django.db.backends.postgresql_psycopg2
-export PRJ_DB_NAME='myprojectdb'
-export PRJ_DB_USER='myprojectuser'
+export PRJ_DB_NAME='<database-name>'
+export PRJ_DB_USER='<database-username>'
 export PRJ_DB_PASS='<database password>'
 export PRJ_DB_HOST='<database host: localhost>'
 export PRJ_DB_PORT='<database port: 5432>'
@@ -161,11 +161,11 @@ Make the file look something like this.
 #!/bin/bash
 
 NAME="myproject"
-PRJ_VENV=/var/www/virtualenvs/myprojectenv
-PRJ_HOME=/var/www/myproject
+PRJ_VENV=/var/www/virtualenvs/${NAME}env
+PRJ_HOME=/var/www/${NAME}
 
 RUNDIR=${PRJ_HOME}/run
-SOCKFILE=${RUNDIR}/myproject.sock
+SOCKFILE=${RUNDIR}/${NAME}.sock
 DJANGO_WSGI_MODULE=myproject.wsgi
 TIMEOUT=60
 LOG_LEVEL=info
@@ -180,7 +180,7 @@ cd ${PRJ_HOME}
 # This activates your virtual environment, and brings in all the environmental variables you exported in your activate file.
 source ${PRJ_VENV}/bin/activate
 
-exec gunicorn ${DJANGO_WSGI_MODULE}:application --name $NAME --workers $NUM_WORKERS -t $TIMEOUT  --user=$USER --group=$GROUP --bind unix:${SOCKFILE} --log-level=$LOG_LEVEL --log-file ${PRJ_HOME}/logs/myproject.err --access-logfile ${PRJ_HOME}/logs/myproject.access
+exec gunicorn ${DJANGO_WSGI_MODULE}:application --name $NAME --workers $NUM_WORKERS -t $TIMEOUT  --user=$USER --group=$GROUP --bind unix:${SOCKFILE} --log-level=$LOG_LEVEL --log-file ${PRJ_HOME}/logs/${NAME}.err --access-logfile ${PRJ_HOME}/logs/${NAME}.access
 ```
 
 Don't forget to make it executable
